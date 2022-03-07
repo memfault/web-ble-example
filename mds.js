@@ -4,6 +4,7 @@ const mdsService = "54220000-f6a5-4007-a371-722f4ebd8436";
 let receivedChunks = [];
 let messageBeingSent = false;
 let chunksReceived = 0;
+let expectedSeqNumber = 0;
 
 let bluetoothDevice;
 let mdsServiceRef;
@@ -59,6 +60,11 @@ function reportProgress(progressText) {
   document.getElementById("chunk_status").innerHTML = progressText;
 }
 
+function reportError(progressText) {
+  console.log(progressText);
+  document.getElementById("error_status").innerHTML = progressText;
+}
+
 async function connectAndSubscribe() {
   reportProgress("Scanning ...");
 
@@ -74,7 +80,7 @@ async function connectAndSubscribe() {
 
   const mdsServiceRef = await server.getPrimaryService(mdsService);
 
-  const versionCharacteristic = await mdsServiceRef.getCharacteristic(
+  const supportedFeaturesCharacteristic = await mdsServiceRef.getCharacteristic(
     "54220001-f6a5-4007-a371-722f4ebd8436"
   );
   const deviceIdentifierCharacteristic = await mdsServiceRef.getCharacteristic(
@@ -87,14 +93,9 @@ async function connectAndSubscribe() {
     "54220004-f6a5-4007-a371-722f4ebd8436"
   );
 
-  const versionData = await versionCharacteristic.readValue();
-  const version = new Uint8Array(versionData.buffer);
-  console.log(`MDS Version: ${version[0]}.${version[1]}.${version[2]}`);
-
-  if (version[0] !== 1) {
-    reportProgress("Unsupported MDS version!");
-    return;
-  }
+  const supportedFeaturesData = await supportedFeaturesCharacteristic.readValue();
+  const supportedFeatures = new Uint8Array(supportedFeaturesData.buffer);
+  console.log(`SupportedFeatures: 0x${supportedFeatures[0].toString(16)}`);
 
   const deviceIdentifierData = await deviceIdentifierCharacteristic.readValue();
   const dataUriData = await dataUriCharacteristic.readValue();
@@ -129,6 +130,12 @@ async function connectAndSubscribe() {
   );
   await chunkCharacteristic.startNotifications();
 
+  expectedSeqNumber = 0;
+  const enableStreamingCommand = 0x01;
+  await chunkCharacteristic.writeValueWithResponse(
+    new Uint8Array([enableStreamingCommand])
+  );
+
   reportProgress("Connected!");
 }
 
@@ -149,15 +156,26 @@ function buf2hex(buffer) {
 
 // handle incoming data:
 function handleChunk(event) {
+  const sn = new Uint8Array(event.target.value.buffer.slice(0, 1))[0];
+  const data = event.target.value.buffer.slice(1);
+
   console.log(
-    `Chunk Length: ${event.target.value.byteLength} Data: ${buf2hex(
-      event.target.value.buffer
+    `Chunk Length: ${event.target.value.byteLength} SN: ${sn} Data: ${buf2hex(
+      data
     )}`
   );
+
+  if (expectedSeqNumber != sn) {
+    reportError(
+      `WARNING: Data loss or duplicate packet! <br/> Expected SN was ${expectedSeqNumber} but got ${sn}`
+    );
+  }
+  expectedSeqNumber = (expectedSeqNumber + 1) % 32;
+
   chunksReceived += 1;
   reportProgress(`Forwarded ${chunksReceived} Memfault Chunks`);
 
-  receivedChunks.push(event.target.value);
+  receivedChunks.push(data);
   sendChunkToMemfault();
 }
 
