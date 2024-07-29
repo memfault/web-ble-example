@@ -10,5 +10,5 @@ https://docs.memfault.com/docs/mcu/introduction
 
 And find detailed information on the Memfault Diagnostic Service here:
 
-- <https://memfault.notion.site/Memfault-Diagnostic-GATT-Service-MDS-ffd5a430062649cd9bf6edbf64e2563b>
+- <https://docs.memfault.com/docs/mcu/mds>
 - [https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/include/memfault/ports/ble/mds.h](https://github.com/memfault/memfault-firmware-sdk/blob/b7eea3b5d8e533d04c6bedbb8148938667334b91/ports/include/memfault/ports/ble/mds.h)
