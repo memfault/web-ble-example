@@ -2,21 +2,66 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <script type="text/javascript" src="mds.js"></script>
     <title>Memfault Diagnostic Service Web Bluetooth Client</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      button {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+      }
+      #connect {
+        background-color: #4caf50;
+        color: white;
+      }
+      #disconnect {
+        background-color: #f44336;
+        color: white;
+      }
+      h3 {
+        margin: 1rem 0;
+      }
+      #error_status {
+        color: red;
+      }
+      hr {
+        width: 50%;
+        border: 1px solid #ddd;
+        margin: 2rem 0;
+      }
+      a {
+        text-decoration: none;
+        color: #007bff;
+      }
+      p {
+        font-size: 0.8rem;
+        color: #aaa;
+      }
+    </style>
+    <script type="text/javascript" src="mds.js"></script>
   </head>
   <body>
-      <button onClick="connect()">connect</button>
-    <button onClick="disconnect()">disconnect</button>
-    <br />
-    <br />
+    <h1>Memfault Diagnostic Service Web Bluetooth Client</h1>
+    <div class="button-container">
+      <button id="connect" onClick="connect()">Connect</button>
+      <button id="disconnect" onClick="disconnect()">Disconnect</button>
+    </div>
     <h3 id="chunk_status">
       Click "Connect" Button to start forwarding Chunks!
     </h3>
     <h3 id="error_status"></h3>
     <hr />
     <a href="https://github.com/memfault/web-ble-example"
-      >View the source code and documentation on GitHub</a>
+      >View the source code and documentation on GitHub</a
+    >
     <p>
       <em>Note: Press F12 to open the browser console log to see details.</em>
     </p>
